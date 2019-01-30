@@ -4,6 +4,7 @@ metadata:
   labels:
     app: cassandra
   name: cassandra
+  namespace: devops
 spec:
   clusterIP: None
   ports:
@@ -16,6 +17,7 @@ apiVersion: "apps/v1beta1"
 kind: StatefulSet
 metadata:
   name: cassandra
+  namespace: devops
 spec:
   serviceName: cassandra
   replicas: 1
@@ -58,7 +60,7 @@ spec:
           - name: HEAP_NEWSIZE
             value: 100M
           - name: CASSANDRA_SEEDS
-            value: "cassandra-0.cassandra.default.svc.cluster.local"
+            value: "cassandra-0.cassandra.devops.svc.cluster.local"
           - name: CASSANDRA_CLUSTER_NAME
             value: "K8Demo"
           - name: CASSANDRA_DC
@@ -83,14 +85,15 @@ spec:
         # but not exactly because the names need to match exactly one of
         # the stateful pod volumes.
         volumeMounts:
-        - name: cassandra-data
+        - name: kong
           mountPath: /cassandra_data
   # These are converted to volume claims by the controller
   # and mounted at the paths mentioned above.
   # do not use these in production until ssd GCEPersistentDisk or other ssd pd
   volumeClaimTemplates:
   - metadata:
-      name: cassandra-data
+      name: kong
+      namespace: devops
       annotations:
         volume.beta.kubernetes.io/storage-class: fast
     spec:
@@ -103,6 +106,7 @@ kind: StorageClass
 apiVersion: storage.k8s.io/v1beta1
 metadata:
   name: fast
+  namespace: devops
 provisioner: kubernetes.io/gce-pd
 parameters:
   type: pd-ssd
